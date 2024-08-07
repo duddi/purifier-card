@@ -39,16 +39,6 @@ if (!customElements.get('ha-icon-button')) {
   );
 }
 
-// Add Xiaomi-specific service handling
-if (domain === 'xiaomi_miio') {
-  // Example Xiaomi-specific handling
-  if (name === 'set_mode') {
-    options = { ...options, mode: 'auto' }; // Example of setting mode to auto
-  } else if (name === 'set_fan_level') {
-    options = { ...options, fan_level: 2 }; // Example of setting fan level
-  }
-}
-
 const SUPPORT_PRESET_MODE = 8;
 @customElement('purifier-card')
 export class PurifierCard extends LitElement {
@@ -124,6 +114,17 @@ export class PurifierCard extends LitElement {
     request = true,
   ) {
     const [domain, name] = service.split('.');
+  
+    // Add Xiaomi-specific service handling
+    if (domain === 'xiaomi_miio') {
+      // Example Xiaomi-specific handling
+      if (name === 'set_mode') {
+        options = { ...options, mode: 'auto' }; // Example of setting mode to auto
+      } else if (name === 'set_fan_level') {
+        options = { ...options, fan_level: 2 }; // Example of setting fan level
+      }
+    }
+  
     this.hass.callService(
       domain,
       name,
@@ -133,7 +134,7 @@ export class PurifierCard extends LitElement {
       },
       target,
     );
-
+  
     if (request) {
       this.requestInProgress = true;
       this.requestUpdate();
@@ -142,19 +143,31 @@ export class PurifierCard extends LitElement {
 
   private handlePresetMode(event: PointerEvent) {
     const preset_mode = (<HTMLDivElement>event.target).getAttribute('value');
-    this.callService('fan.set_preset_mode', { preset_mode });
+    
+    // Xiaomi-specific preset mode handling
+    if (this.config.entity.includes('xiaomi')) {
+      this.callService('xiaomi_miio.fan_set_mode', { mode: preset_mode });
+    } else {
+      this.callService('fan.set_preset_mode', { preset_mode });
+    }
   }
-
+  
   private handlePercentage(event: CustomEvent<SliderValue>) {
     const percentage = event.detail.value;
-    this.callService('fan.set_percentage', { percentage });
+  
+    // Xiaomi-specific percentage handling
+    if (this.config.entity.includes('xiaomi')) {
+      this.callService('xiaomi_miio.fan_set_fan_level', { level: percentage });
+    } else {
+      this.callService('fan.set_percentage', { percentage });
+    }
   }
-
+  
   private renderPresetMode(): Template {
     const {
       attributes: { preset_mode, preset_modes, supported_features = 0 },
     } = this.entity;
-
+  
     if (
       !preset_mode ||
       !this.config.show_preset_mode ||
@@ -163,6 +176,34 @@ export class PurifierCard extends LitElement {
     ) {
       return nothing;
     }
+  
+    const selected = preset_modes.indexOf(preset_mode);
+  
+    return html`
+      <div class="preset-mode">
+        <ha-button-menu @click="${(e: PointerEvent) => e.stopPropagation()}">
+          <mmp-icon-button slot="trigger">
+            <ha-icon icon="mdi:fan"></ha-icon>
+            <span>
+              ${localize(`preset_mode.${preset_mode}`) || preset_mode}
+            </span>
+          </mmp-icon-button>
+  
+          ${preset_modes.map(
+            (item, index) => html`
+              <mwc-list-item
+                ?activated=${selected === index}
+                value=${item}
+                @click=${(e: PointerEvent) => this.handlePresetMode(e)}
+              >
+                ${localize(`preset_mode.${item.toLowerCase()}`) || item}
+              </mwc-list-item>
+            `,
+          )}
+        </ha-button-menu>
+      </div>
+    `;
+  }
 
     const selected = preset_modes.indexOf(preset_mode);
 
