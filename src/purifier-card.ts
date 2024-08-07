@@ -35,7 +35,7 @@ console.info(
 if (!customElements.get('ha-icon-button')) {
   customElements.define(
     'ha-icon-button',
-    class extends (customElements.get('paper-icon-button') ?? HTMLElement) {},
+    class extends (customElements.get('paper-icon-button') ?? HTMLElement) { },
   );
 }
 
@@ -87,7 +87,7 @@ export class PurifierCard extends LitElement {
     if (
       changedProps.get('hass') &&
       changedProps.get('hass').states[this.config.entity] !==
-        this.hass.states[this.config.entity]
+      this.hass.states[this.config.entity]
     ) {
       this.requestInProgress = false;
     }
@@ -114,7 +114,7 @@ export class PurifierCard extends LitElement {
     request = true,
   ) {
     const [domain, name] = service.split('.');
-  
+
     // Add Xiaomi-specific service handling
     if (domain === 'xiaomi_miio') {
       // Example Xiaomi-specific handling
@@ -124,7 +124,7 @@ export class PurifierCard extends LitElement {
         options = { ...options, fan_level: 2 }; // Example of setting fan level
       }
     }
-  
+
     this.hass.callService(
       domain,
       name,
@@ -134,7 +134,7 @@ export class PurifierCard extends LitElement {
       },
       target,
     );
-  
+
     if (request) {
       this.requestInProgress = true;
       this.requestUpdate();
@@ -143,7 +143,7 @@ export class PurifierCard extends LitElement {
 
   private handlePresetMode(event: PointerEvent) {
     const preset_mode = (<HTMLDivElement>event.target).getAttribute('value');
-    
+
     // Xiaomi-specific preset mode handling
     if (this.config.entity.includes('xiaomi')) {
       this.callService('xiaomi_miio.fan_set_mode', { mode: preset_mode });
@@ -151,10 +151,10 @@ export class PurifierCard extends LitElement {
       this.callService('fan.set_preset_mode', { preset_mode });
     }
   }
-  
+
   private handlePercentage(event: CustomEvent<SliderValue>) {
     const percentage = event.detail.value;
-  
+
     // Xiaomi-specific percentage handling
     if (this.config.entity.includes('xiaomi')) {
       this.callService('xiaomi_miio.fan_set_fan_level', { level: percentage });
@@ -162,12 +162,12 @@ export class PurifierCard extends LitElement {
       this.callService('fan.set_percentage', { percentage });
     }
   }
-  
+
   private renderPresetMode(): Template {
     const {
       attributes: { preset_mode, preset_modes, supported_features = 0 },
     } = this.entity;
-  
+
     if (
       !preset_mode ||
       !this.config.show_preset_mode ||
@@ -176,34 +176,6 @@ export class PurifierCard extends LitElement {
     ) {
       return nothing;
     }
-  
-    const selected = preset_modes.indexOf(preset_mode);
-  
-    return html`
-      <div class="preset-mode">
-        <ha-button-menu @click="${(e: PointerEvent) => e.stopPropagation()}">
-          <mmp-icon-button slot="trigger">
-            <ha-icon icon="mdi:fan"></ha-icon>
-            <span>
-              ${localize(`preset_mode.${preset_mode}`) || preset_mode}
-            </span>
-          </mmp-icon-button>
-  
-          ${preset_modes.map(
-            (item, index) => html`
-              <mwc-list-item
-                ?activated=${selected === index}
-                value=${item}
-                @click=${(e: PointerEvent) => this.handlePresetMode(e)}
-              >
-                ${localize(`preset_mode.${item.toLowerCase()}`) || item}
-              </mwc-list-item>
-            `,
-          )}
-        </ha-button-menu>
-      </div>
-    `;
-  }
 
     const selected = preset_modes.indexOf(preset_mode);
 
@@ -216,9 +188,9 @@ export class PurifierCard extends LitElement {
               ${localize(`preset_mode.${preset_mode}`) || preset_mode}
             </span>
           </mmp-icon-button>
-
+  
           ${preset_modes.map(
-            (item, index) => html`
+      (item, index) => html`
               <mwc-list-item
                 ?activated=${selected === index}
                 value=${item}
@@ -227,12 +199,12 @@ export class PurifierCard extends LitElement {
                 ${localize(`preset_mode.${item.toLowerCase()}`) || item}
               </mwc-list-item>
             `,
-          )}
+    )}
         </ha-button-menu>
       </div>
     `;
   }
-  
+
   private renderAQI(): Template {
     const { aqi = {} } = this.config;
     const { entity_id, attribute, unit = 'AQI' } = aqi;
@@ -282,7 +254,7 @@ export class PurifierCard extends LitElement {
           step=${percentage_step}
           ?disabled="${disabled}"
           @value-changed=${(e: CustomEvent<SliderValue>) =>
-            this.handlePercentage(e)}
+        this.handlePercentage(e)}
         >
         </round-slider>
         <img src=${image} alt="purifier is ${state}" class="image" />
