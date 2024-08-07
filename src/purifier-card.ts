@@ -39,6 +39,16 @@ if (!customElements.get('ha-icon-button')) {
   );
 }
 
+// Add Xiaomi-specific service handling
+if (domain === 'xiaomi_miio') {
+  // Example Xiaomi-specific handling
+  if (name === 'set_mode') {
+    options = { ...options, mode: 'auto' }; // Example of setting mode to auto
+  } else if (name === 'set_fan_level') {
+    options = { ...options, fan_level: 2 }; // Example of setting fan level
+  }
+}
+
 const SUPPORT_PRESET_MODE = 8;
 @customElement('purifier-card')
 export class PurifierCard extends LitElement {
@@ -181,7 +191,7 @@ export class PurifierCard extends LitElement {
       </div>
     `;
   }
-
+  
   private renderAQI(): Template {
     const { aqi = {} } = this.config;
     const { entity_id, attribute, unit = 'AQI' } = aqi;
