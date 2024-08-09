@@ -1,4 +1,34 @@
-[![SWUbanner](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua/)
+
+This i a fork of https://github.com/denysdovhan/purifier-card
+
+
+This fork introduces several key enhancements and modifications to the original Purifier Card for Home Assistant, making it more tailored to Xiaomi air purifiers and adding specific functionalities that were not present in the original version.
+
+1. Xiaomi-Specific Enhancements
+Fan Speed Control:
+
+The fan speed is now controlled using the xiaomi_miot.set_miot_property service. The slider directly adjusts the fan speed by converting the percentage to the corresponding Xiaomi-specific speed value (from 0 to 14) and sends it via the siid and piid parameters.
+The card automatically sets the preset mode to "Favorite" whenever the fan speed is adjusted, ensuring compatibility with Xiaomi's operation modes.
+Preset Mode Display:
+
+The slider percentage value is dynamically replaced with "Auto" or "Sleep" when these preset modes are selected, providing a clearer and more intuitive interface.
+
+2. Custom Naming
+Configurable Entity Name:
+Users can now set a custom name for the purifier entity through the card's configuration. If a custom name is provided, it will be displayed on the card; otherwise, the default friendly_name of the entity will be shown.
+
+3. Shortcut Enhancements
+Preset and Speed Shortcuts:
+The card includes shortcuts for preset modes like Auto, Sleep, and Favorite, as well as direct speed controls (e.g., 25%, 50%, 75%, and 100%). Each shortcut adjusts the fan speed accordingly and updates the slider to reflect the new value.
+
+4. General Improvements
+Simplified Code Structure:
+The code has been streamlined to focus specifically on Xiaomi devices, reducing complexity and potential conflicts with other brands or models.
+Enhanced Error Handling:
+Added better handling and logging for service calls, particularly around fan speed and preset mode adjustments.
+
+Summary of New Capabilities
+The updated version of the Purifier Card is optimized for Xiaomi air purifiers, offering direct control over fan speed, preset modes, and other Xiaomi-specific features. It also includes enhanced customization options, allowing users to set custom names and create specialized shortcuts like filter resets, all within a simplified and more user-friendly interface. This version is ideal for users who primarily operate Xiaomi air purifiers and need a more integrated and seamless control experience within Home Assistant.
 
 # Purifier Card
 
@@ -64,6 +94,7 @@ Typical example of using this card in YAML config would look like this:
 ```yaml
 type: 'custom:purifier-card'
 entity: fan.purifier
+name: some name on the card
 stats:
   - attribute: filter_life_remaining
     unit: '%'
@@ -106,6 +137,7 @@ Here is what every option means:
 | ------------------ | :-------: | ------------ | ------------------------------------------------ |
 | `type`             | `string`  | **Required** | `custom:purifier-card`                           |
 | `entity`           | `string`  | **Required** | An entity_id within the `fan` domain.            |
+| `name`             | `string`  | Optional     | Name of the purifier.                            |
 | `show_name`        | `boolean` | `true`       | Show friendly name of the purifier.              |
 | `show_state`       | `boolean` | `true`       | Show state of the purifier.                      |
 | `show_preset_mode` | `boolean` | `true`       | Show preset mode of the purifier in the header.  |
