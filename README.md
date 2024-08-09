@@ -279,19 +279,12 @@ This card relies on basic fan services, like `toggle`, `turn_on`, `turn_off`, et
 If this card works with your air purifier, please open a PR and your model to the list.
 
 - Air Purifier 4 Pro
+- Air Purifier 4 Lite
+- Air Purifier 4 Compact
 - Air Purifier 3/3H
 - Air Purifier 2/2H/2S
 - Air Purifier Pro
-- Blueair Classic 480i/680i
-- Coway Airmega 300S/400S ([using IoCare custom component](https://github.com/RobertD502/home-assistant-iocare))
-- Dyson Pure Cool/Cool Link/Cool Desk/Cool Link Desk ([using Dyson custom integration](https://github.com/libdyson-wg/ha-dyson))
-- Dyson Pure Humidify+Cool ([using Dyson custom integration](https://github.com/libdyson-wg/ha-dyson))
-- Winix AM90 Wi-Fi Air Purifier
-- Philips AirPurifier AC3858/50 (partially)
-- SmartMI Air Purifier
-- Ikea Starkvind
-- Levoit Air Purifier (Core 400S)
-- [_Your purifier?_][edit-readme]
+
 
 ## Development
 
