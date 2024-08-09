@@ -53,6 +53,7 @@ export interface PurifierCardShortcut {
 export interface PurifierCardConfig {
   entity: string;
   show_name: boolean;
+  name?: string;
   show_state: boolean;
   show_preset_mode: boolean;
   show_toolbar: boolean;
