@@ -46,6 +46,7 @@ export class PurifierCard extends LitElement {
 
   @state() private config!: PurifierCardConfig;
   @state() private requestInProgress = false;
+  @state() private sliderValue: number = 50; // Initial værdi for slideren
 
   public static get styles(): CSSResultGroup {
     return styles;
@@ -115,16 +116,9 @@ export class PurifierCard extends LitElement {
   ) {
     const [domain, name] = service.split('.');
 
-    // Add Xiaomi-specific service handling
-    if (domain === 'xiaomi_miio') {
-      // Example Xiaomi-specific handling
-      if (name === 'set_mode') {
-        options = { ...options, mode: 'auto' }; // Example of setting mode to auto
-      } else if (name === 'set_fan_level') {
-        options = { ...options, fan_level: 2 }; // Example of setting fan level
-      }
-    }
+    console.log(`Calling service ${service} with options:`, options);
 
+    // Call the service
     this.hass.callService(
       domain,
       name,
@@ -141,26 +135,26 @@ export class PurifierCard extends LitElement {
     }
   }
 
-  private handlePresetMode(event: PointerEvent) {
-    const preset_mode = (<HTMLDivElement>event.target).getAttribute('value');
-
-    // Xiaomi-specific preset mode handling
-    if (this.config.entity.includes('xiaomi')) {
-      this.callService('xiaomi_miio.fan_set_mode', { mode: preset_mode });
-    } else {
-      this.callService('fan.set_preset_mode', { preset_mode });
-    }
+  private handlePresetMode(e: PointerEvent) {
+    const mode = (e.target as HTMLDivElement).getAttribute('value');
+    this.callService('fan.set_preset_mode', { preset_mode: mode });
   }
 
   private handlePercentage(event: CustomEvent<SliderValue>) {
-    const percentage = event.detail.value;
+    this.sliderValue = Math.round(event.detail.value);
 
     // Xiaomi-specific percentage handling
-    if (this.config.entity.includes('xiaomi')) {
-      this.callService('xiaomi_miio.fan_set_fan_level', { level: percentage });
-    } else {
-      this.callService('fan.set_percentage', { percentage });
-    }
+    const speed = Math.round((this.sliderValue * 14) / 100);
+
+    // Set fan speed using xiaomi_miot.set_miot_property
+    this.callService('xiaomi_miot.set_miot_property', {
+      siid: 9,
+      piid: 11,
+      value: speed
+    });
+
+    // Change preset to Favorite 
+    this.callService('fan.set_preset_mode', { preset_mode: 'Favorite' });
   }
 
   private renderPresetMode(): Template {
@@ -188,13 +182,13 @@ export class PurifierCard extends LitElement {
               ${localize(`preset_mode.${preset_mode}`) || preset_mode}
             </span>
           </mmp-icon-button>
-  
+
           ${preset_modes.map(
       (item, index) => html`
               <mwc-list-item
                 ?activated=${selected === index}
                 value=${item}
-                @click=${(e: PointerEvent) => this.handlePresetMode(e)}
+                @click=${this.handlePresetMode}
               >
                 ${localize(`preset_mode.${item.toLowerCase()}`) || item}
               </mwc-list-item>
@@ -241,7 +235,7 @@ export class PurifierCard extends LitElement {
   private renderSlider(): Template {
     const {
       state,
-      attributes: { percentage, percentage_step },
+      attributes: { percentage_step = 5, preset_mode },
     } = this.entity;
 
     const disabled = state !== 'on';
@@ -250,7 +244,7 @@ export class PurifierCard extends LitElement {
     return html`
       <div class="slider">
         <round-slider
-          value=${percentage}
+          value=${this.sliderValue}
           step=${percentage_step}
           ?disabled="${disabled}"
           @value-changed=${(e: CustomEvent<SliderValue>) =>
@@ -261,7 +255,7 @@ export class PurifierCard extends LitElement {
         <div class="slider-center">
           <div class="slider-content">${this.renderAQI()}</div>
           <div class="slider-value">
-            ${percentage ? `${percentage}%` : nothing}
+            ${preset_mode === 'Auto' ? 'Auto' : preset_mode === 'Sleep' ? 'Sleep' : `${this.sliderValue}%`}
           </div>
         </div>
       </div>
@@ -280,8 +274,9 @@ export class PurifierCard extends LitElement {
     if (!this.config.show_name) {
       return nothing;
     }
+    const displayName = this.config.name ?? friendly_name;
+    return html` <div class="friendly-name">${displayName}</div> `;
 
-    return html` <div class="friendly-name">${friendly_name}</div> `;
   }
 
   private renderState(): Template {
@@ -378,14 +373,24 @@ export class PurifierCard extends LitElement {
           }
 
           if (percentage) {
-            this.callService('fan.set_percentage', { percentage });
+            const speed = Math.round((percentage * 14) / 100);
+            this.callService('xiaomi_miot.set_miot_property', {
+              siid: 9,
+              piid: 11,
+              value: speed
+            });
+            // Skift preset til 'Favorite', da det er nødvendigt for tilpasset hastighed
+            this.callService('fan.set_preset_mode', { preset_mode: 'Favorite' });
+
+            // Opdater sliderens værdi
+            this.sliderValue = percentage;
           }
         };
 
         const isActive =
           service ||
-          percentage === attributes.percentage ||
-          preset_mode === attributes.preset_mode;
+          (percentage && percentage === attributes.percentage) ||
+          (preset_mode && preset_mode === attributes.preset_mode);
 
         const className = isActive ? 'active' : '';
 
